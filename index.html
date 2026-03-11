@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Calorie Guide</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Food Calorie Guide</h1>
+            <p>Track your daily intake and stay on target.</p>
+        </header>
+
+        <section class="progress-section">
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="label">Total Calories</span>
+                    <span id="total-calories" class="value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Daily Goal</span>
+                    <span class="value">2000 kcal</span>
+                </div>
+            </div>
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <p id="progress-text">0% of daily goal</p>
+        </section>
+
+        <main class="main-grid">
+            <section class="food-library">
+                <h2>Food Library</h2>
+                <p class="subtitle">Click to add to your list</p>
+                <div id="food-list" class="food-list">
+                    <!-- Foods will be rendered here -->
+                </div>
+            </section>
+
+            <section class="consumption-log">
+                <h2>Today's Log</h2>
+                
+                <form id="custom-food-form" class="custom-add-form">
+                    <input type="text" id="custom-name" placeholder="Food name..." required>
+                    <input type="number" id="custom-calories" placeholder="kcal" required min="0">
+                    <button type="submit" class="add-btn">Add</button>
+                </form>
+
+                <div id="tracked-list" class="tracked-list">
+                    <!-- Consumed foods will appear here -->
+                    <div class="empty-msg">No foods added today.</div>
+                </div>
+                <button id="clear-all" class="clear-btn">Clear Everything</button>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Calorie Tracker | Simple & Private</p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
