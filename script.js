@@ -1,25 +1,25 @@
-// Food Library Data (Standardized to kcal per 100g)
+// Food Library Data with specialized units
 const FOODS = [
-    { id: 1, name: "Apple", caloriesPer100g: 52 },
-    { id: 2, name: "Banana", caloriesPer100g: 89 },
-    { id: 3, name: "Chicken Breast", caloriesPer100g: 165 },
-    { id: 4, name: "Egg", caloriesPer100g: 155 },
-    { id: 5, name: "White Rice (Cooked)", caloriesPer100g: 130 },
-    { id: 6, name: "Almonds", caloriesPer100g: 579 },
-    { id: 7, name: "Greek Yogurt", caloriesPer100g: 59 },
-    { id: 8, name: "Avocado", caloriesPer100g: 160 },
-    { id: 9, name: "Salmon", caloriesPer100g: 208 },
-    { id: 10, name: "Peanut Butter", caloriesPer100g: 588 },
-    { id: 11, name: "Oatmeal (Cooked)", caloriesPer100g: 68 },
-    { id: 12, name: "Broccoli", caloriesPer100g: 34 },
-    { id: 13, name: "Black Beans", caloriesPer100g: 132 },
-    { id: 14, name: "Olive Oil", caloriesPer100g: 884 },
-    { id: 15, name: "Sweet Potato", caloriesPer100g: 86 },
-    { id: 16, name: "Pizza", caloriesPer100g: 266 },
-    { id: 17, name: "Burger", caloriesPer100g: 295 },
-    { id: 18, name: "Spinach", caloriesPer100g: 23 },
-    { id: 19, name: "Whole Wheat Bread", caloriesPer100g: 247 },
-    { id: 20, name: "Blueberries", caloriesPer100g: 57 }
+    { id: 1, name: "Apple", caloriesPerUnit: 52, unit: "100g" },
+    { id: 2, name: "Banana", caloriesPerUnit: 89, unit: "100g" },
+    { id: 3, name: "Chicken Breast", caloriesPerUnit: 165, unit: "100g" },
+    { id: 4, name: "Egg", caloriesPerUnit: 78, unit: "piece", isInteger: true },
+    { id: 5, name: "White Rice (Cooked)", caloriesPerUnit: 205, unit: "cup" },
+    { id: 6, name: "Almonds", caloriesPerUnit: 164, unit: "28g (1oz)" },
+    { id: 7, name: "Greek Yogurt", caloriesPerUnit: 100, unit: "170g container" },
+    { id: 8, name: "Avocado", caloriesPerUnit: 160, unit: "100g" },
+    { id: 9, name: "Salmon", caloriesPerUnit: 208, unit: "100g" },
+    { id: 10, name: "Peanut Butter", caloriesPerUnit: 94, unit: "tablespoon" },
+    { id: 11, name: "Oatmeal (Cooked)", caloriesPerUnit: 154, unit: "cup" },
+    { id: 12, name: "Broccoli", caloriesPerUnit: 31, unit: "cup" },
+    { id: 13, name: "Black Beans", caloriesPerUnit: 114, unit: "1/2 cup" },
+    { id: 14, name: "Olive Oil", caloriesPerUnit: 119, unit: "tablespoon" },
+    { id: 15, name: "Sweet Potato", caloriesPerUnit: 112, unit: "medium" },
+    { id: 16, name: "Pizza", caloriesPerUnit: 285, unit: "slice", isInteger: true },
+    { id: 17, name: "Burger", caloriesPerUnit: 354, unit: "unit", isInteger: true },
+    { id: 18, name: "Spinach", caloriesPerUnit: 7, unit: "cup" },
+    { id: 19, name: "Whole Wheat Bread", caloriesPerUnit: 69, unit: "slice", isInteger: true },
+    { id: 20, name: "Blueberries", caloriesPerUnit: 84, unit: "cup" }
 ];
 
 const DAILY_GOAL = 2000;
@@ -37,6 +37,9 @@ const clearAllBtn = document.getElementById('clear-all');
 const smartAddForm = document.getElementById('smart-add-form');
 const foodDatalist = document.getElementById('food-options');
 const libraryWeightInput = document.getElementById('library-weight');
+const smartNameInput = document.getElementById('smart-name');
+const smartAmountInput = document.getElementById('smart-grams');
+const amountLabel = document.getElementById('amount-label');
 
 // Initialize
 function init() {
@@ -48,28 +51,72 @@ function init() {
 }
 
 function setupEventListeners() {
+    // Update unit label when user types/selects food
+    smartNameInput.addEventListener('input', (e) => {
+        const foodMatch = FOODS.find(f => f.name.toLowerCase() === e.target.value.toLowerCase());
+        if (foodMatch) {
+            amountLabel.textContent = `Amount (${foodMatch.unit}s):`;
+            smartAmountInput.placeholder = `How many ${foodMatch.unit}s?`;
+            
+            // Set step to 1 for items like eggs, pizza slices, etc.
+            if (foodMatch.isInteger) {
+                smartAmountInput.step = "1";
+                smartAmountInput.min = "1";
+                // If current value is decimal, round it
+                if (smartAmountInput.value && smartAmountInput.value % 1 !== 0) {
+                    smartAmountInput.value = Math.round(smartAmountInput.value);
+                }
+            } else {
+                smartAmountInput.step = "0.1";
+                smartAmountInput.min = "0.1";
+            }
+        } else {
+            amountLabel.textContent = `Amount:`;
+            smartAmountInput.placeholder = `How much?`;
+            smartAmountInput.step = "0.1";
+            smartAmountInput.min = "0.1";
+        }
+    });
+
     smartAddForm.onsubmit = (e) => {
         e.preventDefault();
         
-        const nameInput = document.getElementById('smart-name');
-        const gramInput = document.getElementById('smart-grams');
+        const foodName = smartNameInput.value;
+        let amount = parseFloat(smartAmountInput.value);
         
-        const foodName = nameInput.value;
-        const grams = parseFloat(gramInput.value);
-        
-        // Find food in library
         const foodMatch = FOODS.find(f => f.name.toLowerCase() === foodName.toLowerCase());
         
         if (foodMatch) {
-            const totalCals = Math.round((foodMatch.caloriesPer100g / 100) * grams);
-            addFood({ name: foodMatch.name, calories: totalCals, grams: grams });
+            // Ensure integer for specific foods
+            if (foodMatch.isInteger) {
+                amount = Math.round(amount);
+            }
+
+            let totalCals;
+            // If unit is 100g, calculation is (cals/100) * amount
+            if (foodMatch.unit === "100g") {
+                totalCals = Math.round((foodMatch.caloriesPerUnit / 100) * amount);
+            } else {
+                // Otherwise it's a direct multiplier (cups, slices, pieces)
+                totalCals = Math.round(foodMatch.caloriesPerUnit * amount);
+            }
+
+            addFood({ 
+                name: foodMatch.name, 
+                calories: totalCals, 
+                amount: amount, 
+                unit: foodMatch.unit 
+            });
             
-            // Clear only grams for convenience
-            gramInput.value = '';
-            nameInput.value = '';
-            nameInput.focus();
+            smartAmountInput.value = '';
+            smartNameInput.value = '';
+            amountLabel.textContent = `Amount:`;
+            smartAmountInput.placeholder = `How much?`;
+            smartAmountInput.step = "0.1";
+            smartAmountInput.min = "0.1";
+            smartNameInput.focus();
         } else {
-            alert(`Sorry, "${foodName}" is not in our library yet. Please select an item from the suggestions.`);
+            alert(`Sorry, "${foodName}" is not in our library.`);
         }
     };
 }
@@ -83,7 +130,6 @@ function populateDatalist() {
     });
 }
 
-// Render the list of available foods
 function renderFoodLibrary() {
     foodListEl.innerHTML = '';
     FOODS.forEach(food => {
@@ -91,18 +137,27 @@ function renderFoodLibrary() {
         foodItem.className = 'food-item';
         foodItem.innerHTML = `
             <span class="name">${food.name}</span>
-            <span class="calories">${food.caloriesPer100g} <small>kcal/100g</small></span>
+            <span class="calories">${food.caloriesPerUnit} <small>kcal/${food.unit}</small></span>
         `;
         foodItem.onclick = () => {
-            const grams = parseFloat(libraryWeightInput.value) || 100;
-            const totalCals = Math.round((food.caloriesPer100g / 100) * grams);
-            addFood({ name: food.name, calories: totalCals, grams: grams });
+            let amount = parseFloat(libraryWeightInput.value) || 1;
+            
+            if (food.isInteger) {
+                amount = Math.round(amount);
+            }
+
+            let totalCals;
+            if (food.unit === "100g") {
+                totalCals = Math.round((food.caloriesPerUnit / 100) * amount);
+            } else {
+                totalCals = Math.round(food.caloriesPerUnit * amount);
+            }
+            addFood({ name: food.name, calories: totalCals, amount: amount, unit: food.unit });
         };
         foodListEl.appendChild(foodItem);
     });
 }
 
-// Add food to the consumption log
 function addFood(foodEntry) {
     const entry = {
         ...foodEntry,
@@ -113,20 +168,16 @@ function addFood(foodEntry) {
     updateUI();
 }
 
-// Remove food from the log
 function removeFood(instanceId) {
     trackedFoods = trackedFoods.filter(item => item.instanceId !== instanceId);
     saveData();
     updateUI();
 }
 
-// Update the UI: totals, log, and progress bar
 function updateUI() {
     renderTrackedList();
-
     const total = trackedFoods.reduce((sum, item) => sum + item.calories, 0);
     totalCaloriesEl.textContent = total;
-
     const percentage = Math.min((total / DAILY_GOAL) * 100, 100);
     progressBarEl.style.width = `${percentage}%`;
     progressTextEl.textContent = `${Math.round((total / DAILY_GOAL) * 100)}% of daily goal`;
@@ -140,22 +191,19 @@ function updateUI() {
     }
 }
 
-// Render the list of consumed foods
 function renderTrackedList() {
     trackedListEl.innerHTML = '';
-    
     if (trackedFoods.length === 0) {
         trackedListEl.innerHTML = '<div class="empty-msg">No foods added today.</div>';
         return;
     }
-
     trackedFoods.forEach(item => {
         const trackedItem = document.createElement('div');
         trackedItem.className = 'tracked-item';
         trackedItem.innerHTML = `
             <div>
                 <span style="font-weight: 600;">${item.name}</span>
-                <span style="font-size: 0.8rem; color: #666; margin-left: 10px;">${item.grams}g | ${item.calories} kcal</span>
+                <span style="font-size: 0.8rem; color: #666; margin-left: 10px;">${item.amount} ${item.unit}(s) | ${item.calories} kcal</span>
             </div>
             <button class="remove-btn" onclick="removeFood(${item.instanceId})">&times;</button>
         `;
@@ -163,22 +211,20 @@ function renderTrackedList() {
     });
 }
 
-// Clear all tracked data
 clearAllBtn.onclick = () => {
-    if (confirm("Are you sure you want to clear your entire log?")) {
+    if (confirm("Are you sure?")) {
         trackedFoods = [];
         saveData();
         updateUI();
     }
 };
 
-// Local Storage helpers
 function saveData() {
-    localStorage.setItem('calorieTrackerDataV3', JSON.stringify(trackedFoods));
+    localStorage.setItem('calorieTrackerDataV4', JSON.stringify(trackedFoods));
 }
 
 function loadData() {
-    const data = localStorage.getItem('calorieTrackerDataV3');
+    const data = localStorage.getItem('calorieTrackerDataV4');
     if (data) {
         trackedFoods = JSON.parse(data);
     }

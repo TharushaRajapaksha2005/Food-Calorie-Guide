@@ -49,14 +49,17 @@
                 
                 <form id="smart-add-form" class="custom-add-form">
                     <div class="input-row">
-                        <input type="text" id="smart-name" list="food-options" placeholder="What did you eat? (e.g. Apple)" required>
+                        <input type="text" id="smart-name" list="food-options" placeholder="What did you eat? (e.g. White Rice)" required>
                         <datalist id="food-options">
                             <!-- Options will be populated by JS -->
                         </datalist>
                     </div>
                     <div class="input-row">
-                        <input type="number" id="smart-grams" placeholder="Grams (e.g. 150)" required min="1">
-                        <button type="submit" class="add-btn">Add to Log</button>
+                        <div class="amount-container" style="flex: 1; display: flex; flex-direction: column;">
+                            <label id="amount-label" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 2px;">Amount:</label>
+                            <input type="number" id="smart-grams" placeholder="How much?" required min="0.1" step="0.1">
+                        </div>
+                        <button type="submit" class="add-btn" style="align-self: flex-end;">Add to Log</button>
                     </div>
                 </form>
 
