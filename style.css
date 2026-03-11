@@ -3,18 +3,41 @@
     --primary-light: #81C784;
     --secondary: #2196F3;
     --danger: #F44336;
+    --warning-bg: #FFEBEE;
+    --warning-border: #FFCDD2;
     --bg: #F5F7FA;
     --card: #FFFFFF;
     --text: #333;
     --text-muted: #666;
     --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     --radius: 12px;
+    --input-bg: #FFFFFF;
+    --input-border: #DDD;
+    --item-bg: #F8F9FA;
+    --item-hover: #F9F9F9;
+    --modal-bg: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme='dark'] {
+    --bg: #121212;
+    --card: #1E1E1E;
+    --text: #E0E0E0;
+    --text-muted: #AAAAAA;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --input-bg: #2C2C2C;
+    --input-border: #444;
+    --item-bg: #2C2C2C;
+    --item-hover: #383838;
+    --modal-bg: rgba(0, 0, 0, 0.85);
+    --warning-bg: #311B1B;
+    --warning-border: #621B1B;
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 body {
@@ -33,6 +56,43 @@ body {
 header {
     text-align: center;
     margin-bottom: 30px;
+    position: relative;
+}
+
+.theme-switch-wrapper {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.theme-toggle-btn {
+    background: var(--item-bg);
+    border: 1px solid var(--input-border);
+    padding: 8px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+    transform: scale(1.1);
+}
+
+.theme-toggle-btn:active {
+    transform: scale(0.95);
+}
+
+[data-theme='dark'] .icon-sun {
+    display: none;
+}
+
+[data-theme='dark'] .icon-moon {
+    display: inline !important;
 }
 
 header h1 {
@@ -80,7 +140,7 @@ header p {
 }
 
 .progress-container {
-    background: #E0E0E0;
+    background: var(--input-border);
     height: 20px;
     border-radius: 10px;
     overflow: hidden;
@@ -91,7 +151,7 @@ header p {
     height: 100%;
     width: 0%;
     background: linear-gradient(90deg, var(--primary-light), var(--primary));
-    transition: width 0.4s ease;
+    transition: width 0.4s ease, background 0.3s ease;
 }
 
 #progress-text {
@@ -124,7 +184,7 @@ section h2 {
     align-items: center;
     gap: 10px;
     margin-bottom: 10px;
-    background: #f0f4f8;
+    background: var(--item-bg);
     padding: 10px;
     border-radius: 8px;
 }
@@ -137,8 +197,10 @@ section h2 {
 .library-controls input {
     width: 70px;
     padding: 5px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--input-border);
     border-radius: 4px;
+    background: var(--input-bg);
+    color: var(--text);
 }
 
 .subtitle {
@@ -157,13 +219,13 @@ section h2 {
     justify-content: space-between;
     align-items: center;
     padding: 12px;
-    border-bottom: 1px solid #EEE;
+    border-bottom: 1px solid var(--input-border);
     cursor: pointer;
     transition: background 0.2s;
 }
 
 .food-item:hover {
-    background: #F9F9F9;
+    background: var(--item-hover);
 }
 
 .food-item:last-child {
@@ -209,10 +271,12 @@ section h2 {
 .input-row input {
     flex: 1;
     padding: 10px;
-    border: 1px solid #DDD;
+    border: 1px solid var(--input-border);
     border-radius: 6px;
     outline: none;
     font-size: 0.95rem;
+    background: var(--input-bg);
+    color: var(--text);
 }
 
 .input-row input:focus {
@@ -245,7 +309,7 @@ section h2 {
     justify-content: space-between;
     align-items: center;
     padding: 10px;
-    background: #F8F9FA;
+    background: var(--item-bg);
     border-radius: 8px;
     margin-bottom: 8px;
     animation: fadeIn 0.3s ease;
@@ -308,7 +372,7 @@ section h2 {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
+    background: var(--modal-bg);
     display: none; /* Hidden by default */
     justify-content: center;
     align-items: center;
@@ -321,7 +385,7 @@ section h2 {
 
 /* Modal Content Box */
 .modal-content {
-    background: white;
+    background: var(--card);
     padding: 30px;
     border-radius: var(--radius);
     text-align: center;
@@ -347,13 +411,14 @@ section h2 {
 
 .profile-btn {
     padding: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--input-border);
     border-radius: 8px;
-    background: #f8f9fa;
+    background: var(--item-bg);
     cursor: pointer;
     font-size: 1rem;
     font-weight: 600;
     transition: all 0.2s;
+    color: var(--text);
 }
 
 .profile-btn:hover {
@@ -391,18 +456,20 @@ section h2 {
 .form-group input, .form-group select {
     width: 100%;
     padding: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--input-border);
     border-radius: 6px;
     font-size: 1rem;
+    background: var(--input-bg);
+    color: var(--text);
 }
 
 .radio-group {
     display: flex;
     gap: 20px;
-    background: #f8f9fa;
+    background: var(--item-bg);
     padding: 10px;
     border-radius: 6px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--input-border);
 }
 
 .radio-group label {
@@ -433,14 +500,14 @@ section h2 {
 }
 
 .warning-msg {
-    background: #FFEBEE;
+    background: var(--warning-bg);
     color: var(--danger);
     padding: 12px;
     border-radius: 8px;
     margin: 15px 0;
     font-weight: 600;
     font-size: 0.95rem;
-    border: 1px solid #FFCDD2;
+    border: 1px solid var(--warning-border);
     animation: shake 0.5s ease;
 }
 

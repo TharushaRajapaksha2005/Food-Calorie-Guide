@@ -60,15 +60,26 @@ const setupModal = document.getElementById('setup-modal');
 const goalWarningEl = document.getElementById('goal-warning');
 const changeProfileBtn = document.getElementById('change-profile-btn');
 const calculatorForm = document.getElementById('calculator-form');
+const themeToggleBtn = document.getElementById('theme-toggle');
 
 // Initialize
 function init() {
+    initTheme();
     loadData();
     checkProfile();
     renderFoodLibrary();
     populateDatalist();
     updateUI();
     setupEventListeners();
+}
+
+function initTheme() {
+    let savedTheme = localStorage.getItem('theme');
+    if (!savedTheme) {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        savedTheme = prefersDark ? 'dark' : 'light';
+    }
+    document.documentElement.setAttribute('data-theme', savedTheme);
 }
 
 function checkProfile() {
@@ -81,6 +92,14 @@ function checkProfile() {
 }
 
 function setupEventListeners() {
+    // Theme Toggle
+    themeToggleBtn.onclick = () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+    };
+
     // Calculator Submission
     calculatorForm.onsubmit = (e) => {
         e.preventDefault();
@@ -276,7 +295,7 @@ function renderTrackedList() {
         trackedItem.innerHTML = `
             <div>
                 <span style="font-weight: 600;">${item.name}</span>
-                <span style="font-size: 0.8rem; color: #666; margin-left: 10px;">${item.amount} ${item.unit}(s) | ${item.calories} kcal</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 10px;">${item.amount} ${item.unit}(s) | ${item.calories} kcal</span>
             </div>
             <button class="remove-btn" onclick="removeFood(${item.instanceId})">&times;</button>
         `;
