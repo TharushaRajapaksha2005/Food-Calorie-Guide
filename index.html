@@ -22,28 +22,33 @@
                 </div>
                 <div class="stat-item">
                     <span class="label">Daily Goal</span>
-                    <span class="value">2000 kcal</span>
+                    <span id="goal-value" class="value">2000 kcal</span>
                 </div>
             </div>
             <div class="progress-container">
                 <div id="progress-bar" class="progress-bar"></div>
             </div>
-            <p id="progress-text">0% of daily goal</p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <p id="progress-text">0% of daily goal</p>
+                <button id="change-profile-btn" class="small-link-btn">Change Profile</button>
+            </div>
         </section>
 
-        <main class="main-grid">
-            <section class="food-library">
-                <h2>Food Library</h2>
-                <div class="library-controls">
-                    <label for="library-weight">Grams to add:</label>
-                    <input type="number" id="library-weight" value="100" min="1">
+        <!-- Profile Setup Modal -->
+        <div id="setup-modal" class="modal">
+            <div class="modal-content">
+                <h2>Welcome!</h2>
+                <p>Please select your profile to set your daily calorie goal:</p>
+                <div class="profile-options">
+                    <button class="profile-btn" data-goal="2500" data-type="Man">Man (2500 kcal)</button>
+                    <button class="profile-btn" data-goal="2000" data-type="Woman">Woman (2000 kcal)</button>
+                    <button class="profile-btn" data-goal="2200" data-type="Teenager">Teenager (2200 kcal)</button>
+                    <button class="profile-btn" data-goal="1600" data-type="Child">Child (1600 kcal)</button>
                 </div>
-                <p class="subtitle">Click a food to add specific grams</p>
-                <div id="food-list" class="food-list">
-                    <!-- Foods will be rendered here -->
-                </div>
-            </section>
+            </div>
+        </div>
 
+        <main class="main-grid">
             <section class="consumption-log">
                 <h2>Add to Today's Log</h2>
                 
@@ -68,6 +73,14 @@
                     <div class="empty-msg">No foods added today.</div>
                 </div>
                 <button id="clear-all" class="clear-btn">Clear Everything</button>
+            </section>
+
+            <section class="food-library">
+                <h2>Food Library</h2>
+                <p class="subtitle">Click a food to add a standard portion</p>
+                <div id="food-list" class="food-list">
+                    <!-- Foods will be rendered here -->
+                </div>
             </section>
         </main>
 

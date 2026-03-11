@@ -19,10 +19,26 @@ const FOODS = [
     { id: 17, name: "Burger", caloriesPerUnit: 354, unit: "unit", isInteger: true },
     { id: 18, name: "Spinach", caloriesPerUnit: 7, unit: "cup" },
     { id: 19, name: "Whole Wheat Bread", caloriesPerUnit: 69, unit: "slice", isInteger: true },
-    { id: 20, name: "Blueberries", caloriesPerUnit: 84, unit: "cup" }
+    { id: 20, name: "Blueberries", caloriesPerUnit: 84, unit: "cup" },
+    // Sri Lankan Foods
+    { id: 21, name: "Red Rice (Cooked)", caloriesPerUnit: 218, unit: "cup" },
+    { id: 22, name: "Pol Roti", caloriesPerUnit: 175, unit: "piece", isInteger: true },
+    { id: 23, name: "Hopper (Plain)", caloriesPerUnit: 95, unit: "piece", isInteger: true },
+    { id: 24, name: "Egg Hopper", caloriesPerUnit: 170, unit: "piece", isInteger: true },
+    { id: 25, name: "String Hopper", caloriesPerUnit: 45, unit: "piece", isInteger: true },
+    { id: 26, name: "Dhal Curry (Parippu)", caloriesPerUnit: 150, unit: "cup" },
+    { id: 27, name: "Pol Sambol", caloriesPerUnit: 85, unit: "tablespoon" },
+    { id: 28, name: "Kottu Roti (Chicken)", caloriesPerUnit: 230, unit: "100g" },
+    { id: 29, name: "Fish Ambul Thiyal", caloriesPerUnit: 140, unit: "100g" },
+    { id: 30, name: "Chicken Curry (Sri Lankan)", caloriesPerUnit: 220, unit: "cup" },
+    { id: 31, name: "Parippu Vada", caloriesPerUnit: 120, unit: "piece", isInteger: true },
+    { id: 32, name: "Milk Rice (Kiribath)", caloriesPerUnit: 250, unit: "piece", isInteger: true },
+    { id: 33, name: "Watalappam", caloriesPerUnit: 280, unit: "100g" },
+    { id: 34, name: "Woodapple Juice", caloriesPerUnit: 140, unit: "glass" },
+    { id: 35, name: "Manioc (Boiled)", caloriesPerUnit: 160, unit: "100g" }
 ];
 
-const DAILY_GOAL = 2000;
+let DAILY_GOAL = 2000;
 
 // State
 let trackedFoods = [];
@@ -33,24 +49,54 @@ const trackedListEl = document.getElementById('tracked-list');
 const totalCaloriesEl = document.getElementById('total-calories');
 const progressBarEl = document.getElementById('progress-bar');
 const progressTextEl = document.getElementById('progress-text');
+const goalValueEl = document.getElementById('goal-value');
 const clearAllBtn = document.getElementById('clear-all');
 const smartAddForm = document.getElementById('smart-add-form');
 const foodDatalist = document.getElementById('food-options');
-const libraryWeightInput = document.getElementById('library-weight');
 const smartNameInput = document.getElementById('smart-name');
 const smartAmountInput = document.getElementById('smart-grams');
 const amountLabel = document.getElementById('amount-label');
+const setupModal = document.getElementById('setup-modal');
+const profileBtns = document.querySelectorAll('.profile-btn');
+const changeProfileBtn = document.getElementById('change-profile-btn');
 
 // Initialize
 function init() {
     loadData();
+    checkProfile();
     renderFoodLibrary();
     populateDatalist();
     updateUI();
     setupEventListeners();
 }
 
+function checkProfile() {
+    const savedGoal = localStorage.getItem('calorieTrackerGoal');
+    if (!savedGoal) {
+        setupModal.classList.add('show');
+    } else {
+        DAILY_GOAL = parseInt(savedGoal);
+    }
+}
+
 function setupEventListeners() {
+    // Profile Selection
+    profileBtns.forEach(btn => {
+        btn.onclick = () => {
+            const goal = btn.getAttribute('data-goal');
+            const type = btn.getAttribute('data-type');
+            DAILY_GOAL = parseInt(goal);
+            localStorage.setItem('calorieTrackerGoal', goal);
+            localStorage.setItem('calorieTrackerProfile', type);
+            setupModal.classList.remove('show');
+            updateUI();
+        };
+    });
+
+    changeProfileBtn.onclick = () => {
+        setupModal.classList.add('show');
+    };
+
     // Update unit label when user types/selects food
     smartNameInput.addEventListener('input', (e) => {
         const foodMatch = FOODS.find(f => f.name.toLowerCase() === e.target.value.toLowerCase());
@@ -140,12 +186,9 @@ function renderFoodLibrary() {
             <span class="calories">${food.caloriesPerUnit} <small>kcal/${food.unit}</small></span>
         `;
         foodItem.onclick = () => {
-            let amount = parseFloat(libraryWeightInput.value) || 1;
+            // Default to 100 for 100g units, or 1 for others
+            let amount = food.unit === "100g" ? 100 : 1;
             
-            if (food.isInteger) {
-                amount = Math.round(amount);
-            }
-
             let totalCals;
             if (food.unit === "100g") {
                 totalCals = Math.round((food.caloriesPerUnit / 100) * amount);
@@ -178,6 +221,8 @@ function updateUI() {
     renderTrackedList();
     const total = trackedFoods.reduce((sum, item) => sum + item.calories, 0);
     totalCaloriesEl.textContent = total;
+    goalValueEl.textContent = `${DAILY_GOAL} kcal`;
+    
     const percentage = Math.min((total / DAILY_GOAL) * 100, 100);
     progressBarEl.style.width = `${percentage}%`;
     progressTextEl.textContent = `${Math.round((total / DAILY_GOAL) * 100)}% of daily goal`;
