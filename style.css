@@ -125,10 +125,31 @@ section h2 {
     box-shadow: var(--shadow);
 }
 
+.library-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    background: #f0f4f8;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.library-controls label {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.library-controls input {
+    width: 70px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
 .subtitle {
     font-size: 0.85rem;
     color: var(--text-muted);
-    margin-top: -10px;
     margin-bottom: 15px;
 }
 
@@ -164,6 +185,11 @@ section h2 {
     font-weight: 700;
 }
 
+.food-item .calories small {
+    font-size: 0.7rem;
+    font-weight: 400;
+}
+
 /* Today's Log Styling */
 .consumption-log {
     background: var(--card);
@@ -176,27 +202,26 @@ section h2 {
 
 .custom-add-form {
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 12px;
     margin-bottom: 20px;
 }
 
-.custom-add-form input {
+.input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.input-row input {
+    flex: 1;
     padding: 10px;
     border: 1px solid #DDD;
     border-radius: 6px;
     outline: none;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
 }
 
-.custom-add-form input[type="text"] {
-    flex-grow: 2;
-}
-
-.custom-add-form input[type="number"] {
-    width: 70px;
-}
-
-.custom-add-form input:focus {
+.input-row input:focus {
     border-color: var(--primary);
 }
 
@@ -204,10 +229,11 @@ section h2 {
     background: var(--primary);
     color: #FFF;
     border: none;
-    padding: 10px 15px;
+    padding: 10px 20px;
     border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
+    transition: background 0.2s;
 }
 
 .custom-add-form .add-btn:hover {

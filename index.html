@@ -34,19 +34,30 @@
         <main class="main-grid">
             <section class="food-library">
                 <h2>Food Library</h2>
-                <p class="subtitle">Click to add to your list</p>
+                <div class="library-controls">
+                    <label for="library-weight">Grams to add:</label>
+                    <input type="number" id="library-weight" value="100" min="1">
+                </div>
+                <p class="subtitle">Click a food to add specific grams</p>
                 <div id="food-list" class="food-list">
                     <!-- Foods will be rendered here -->
                 </div>
             </section>
 
             <section class="consumption-log">
-                <h2>Today's Log</h2>
+                <h2>Add to Today's Log</h2>
                 
-                <form id="custom-food-form" class="custom-add-form">
-                    <input type="text" id="custom-name" placeholder="Food name..." required>
-                    <input type="number" id="custom-calories" placeholder="kcal" required min="0">
-                    <button type="submit" class="add-btn">Add</button>
+                <form id="smart-add-form" class="custom-add-form">
+                    <div class="input-row">
+                        <input type="text" id="smart-name" list="food-options" placeholder="What did you eat? (e.g. Apple)" required>
+                        <datalist id="food-options">
+                            <!-- Options will be populated by JS -->
+                        </datalist>
+                    </div>
+                    <div class="input-row">
+                        <input type="number" id="smart-grams" placeholder="Grams (e.g. 150)" required min="1">
+                        <button type="submit" class="add-btn">Add to Log</button>
+                    </div>
                 </form>
 
                 <div id="tracked-list" class="tracked-list">
