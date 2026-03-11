@@ -4,7 +4,7 @@ const FOODS = [
     { id: 2, name: "Banana", caloriesPerUnit: 89, unit: "100g" },
     { id: 3, name: "Chicken Breast", caloriesPerUnit: 165, unit: "100g" },
     { id: 4, name: "Egg", caloriesPerUnit: 78, unit: "piece", isInteger: true },
-    { id: 5, name: "White Rice (Cooked)", caloriesPerUnit: 205, unit: "cup" },
+    { id: 5, name: "White Rice (Cooked)", caloriesPerUnit: 130, unit: "100g" },
     { id: 6, name: "Almonds", caloriesPerUnit: 164, unit: "28g (1oz)" },
     { id: 7, name: "Greek Yogurt", caloriesPerUnit: 100, unit: "170g container" },
     { id: 8, name: "Avocado", caloriesPerUnit: 160, unit: "100g" },
@@ -21,7 +21,7 @@ const FOODS = [
     { id: 19, name: "Whole Wheat Bread", caloriesPerUnit: 69, unit: "slice", isInteger: true },
     { id: 20, name: "Blueberries", caloriesPerUnit: 84, unit: "cup" },
     // Sri Lankan Foods
-    { id: 21, name: "Red Rice (Cooked)", caloriesPerUnit: 218, unit: "cup" },
+    { id: 21, name: "Red Rice (Cooked)", caloriesPerUnit: 138, unit: "100g" },
     { id: 22, name: "Pol Roti", caloriesPerUnit: 175, unit: "piece", isInteger: true },
     { id: 23, name: "Hopper (Plain)", caloriesPerUnit: 95, unit: "piece", isInteger: true },
     { id: 24, name: "Egg Hopper", caloriesPerUnit: 170, unit: "piece", isInteger: true },
@@ -30,7 +30,7 @@ const FOODS = [
     { id: 27, name: "Pol Sambol", caloriesPerUnit: 85, unit: "tablespoon" },
     { id: 28, name: "Kottu Roti (Chicken)", caloriesPerUnit: 230, unit: "100g" },
     { id: 29, name: "Fish Ambul Thiyal", caloriesPerUnit: 140, unit: "100g" },
-    { id: 30, name: "Chicken Curry (Sri Lankan)", caloriesPerUnit: 220, unit: "cup" },
+    { id: 30, name: "Chicken Curry (Sri Lankan)", caloriesPerUnit: 220, unit: "100g" },
     { id: 31, name: "Parippu Vada", caloriesPerUnit: 120, unit: "piece", isInteger: true },
     { id: 32, name: "Milk Rice (Kiribath)", caloriesPerUnit: 250, unit: "piece", isInteger: true },
     { id: 33, name: "Watalappam", caloriesPerUnit: 280, unit: "100g" },
@@ -57,8 +57,9 @@ const smartNameInput = document.getElementById('smart-name');
 const smartAmountInput = document.getElementById('smart-grams');
 const amountLabel = document.getElementById('amount-label');
 const setupModal = document.getElementById('setup-modal');
-const profileBtns = document.querySelectorAll('.profile-btn');
+const goalWarningEl = document.getElementById('goal-warning');
 const changeProfileBtn = document.getElementById('change-profile-btn');
+const calculatorForm = document.getElementById('calculator-form');
 
 // Initialize
 function init() {
@@ -80,21 +81,46 @@ function checkProfile() {
 }
 
 function setupEventListeners() {
-    // Profile Selection
-    profileBtns.forEach(btn => {
-        btn.onclick = () => {
-            const goal = btn.getAttribute('data-goal');
-            const type = btn.getAttribute('data-type');
-            DAILY_GOAL = parseInt(goal);
-            localStorage.setItem('calorieTrackerGoal', goal);
-            localStorage.setItem('calorieTrackerProfile', type);
-            setupModal.classList.remove('show');
-            updateUI();
-        };
-    });
+    // Calculator Submission
+    calculatorForm.onsubmit = (e) => {
+        e.preventDefault();
+
+        const gender = document.querySelector('input[name="gender"]:checked').value;
+        const age = parseInt(document.getElementById('calc-age').value);
+        const weight = parseFloat(document.getElementById('calc-weight').value);
+        const height = parseFloat(document.getElementById('calc-height').value);
+        const activity = parseFloat(document.getElementById('calc-activity').value);
+
+        // Mifflin-St Jeor Equation
+        let bmr;
+        if (gender === 'male') {
+            bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+        } else {
+            bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+        }
+
+        const calculatedGoal = Math.round(bmr * activity);
+
+        DAILY_GOAL = calculatedGoal;
+        localStorage.setItem('calorieTrackerGoal', calculatedGoal);
+        localStorage.setItem('userProfile', JSON.stringify({ gender, age, weight, height, activity }));
+
+        setupModal.classList.remove('show');
+        updateUI();
+    };
 
     changeProfileBtn.onclick = () => {
         setupModal.classList.add('show');
+
+        // Pre-fill form if profile exists
+        const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+        if (profile.age) {
+            document.getElementById('calc-age').value = profile.age;
+            document.getElementById('calc-weight').value = profile.weight;
+            document.getElementById('calc-height').value = profile.height;
+            document.getElementById('calc-activity').value = profile.activity;
+            document.querySelector(`input[name="gender"][value="${profile.gender}"]`).checked = true;
+        }
     };
 
     // Update unit label when user types/selects food
@@ -103,7 +129,7 @@ function setupEventListeners() {
         if (foodMatch) {
             amountLabel.textContent = `Amount (${foodMatch.unit}s):`;
             smartAmountInput.placeholder = `How many ${foodMatch.unit}s?`;
-            
+
             // Set step to 1 for items like eggs, pizza slices, etc.
             if (foodMatch.isInteger) {
                 smartAmountInput.step = "1";
@@ -126,12 +152,12 @@ function setupEventListeners() {
 
     smartAddForm.onsubmit = (e) => {
         e.preventDefault();
-        
+
         const foodName = smartNameInput.value;
         let amount = parseFloat(smartAmountInput.value);
-        
+
         const foodMatch = FOODS.find(f => f.name.toLowerCase() === foodName.toLowerCase());
-        
+
         if (foodMatch) {
             // Ensure integer for specific foods
             if (foodMatch.isInteger) {
@@ -147,13 +173,13 @@ function setupEventListeners() {
                 totalCals = Math.round(foodMatch.caloriesPerUnit * amount);
             }
 
-            addFood({ 
-                name: foodMatch.name, 
-                calories: totalCals, 
-                amount: amount, 
-                unit: foodMatch.unit 
+            addFood({
+                name: foodMatch.name,
+                calories: totalCals,
+                amount: amount,
+                unit: foodMatch.unit
             });
-            
+
             smartAmountInput.value = '';
             smartNameInput.value = '';
             amountLabel.textContent = `Amount:`;
@@ -188,7 +214,7 @@ function renderFoodLibrary() {
         foodItem.onclick = () => {
             // Default to 100 for 100g units, or 1 for others
             let amount = food.unit === "100g" ? 100 : 1;
-            
+
             let totalCals;
             if (food.unit === "100g") {
                 totalCals = Math.round((food.caloriesPerUnit / 100) * amount);
@@ -222,7 +248,7 @@ function updateUI() {
     const total = trackedFoods.reduce((sum, item) => sum + item.calories, 0);
     totalCaloriesEl.textContent = total;
     goalValueEl.textContent = `${DAILY_GOAL} kcal`;
-    
+
     const percentage = Math.min((total / DAILY_GOAL) * 100, 100);
     progressBarEl.style.width = `${percentage}%`;
     progressTextEl.textContent = `${Math.round((total / DAILY_GOAL) * 100)}% of daily goal`;
@@ -230,9 +256,11 @@ function updateUI() {
     if (total > DAILY_GOAL) {
         totalCaloriesEl.style.color = 'var(--danger)';
         progressBarEl.style.background = 'var(--danger)';
+        goalWarningEl.style.display = 'block';
     } else {
         totalCaloriesEl.style.color = 'var(--primary)';
         progressBarEl.style.background = 'linear-gradient(90deg, var(--primary-light), var(--primary))';
+        goalWarningEl.style.display = 'none';
     }
 }
 
