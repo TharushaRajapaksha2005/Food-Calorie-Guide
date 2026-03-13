@@ -90,27 +90,16 @@
         .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
             padding-bottom: 4px;
         }
 
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: var(--primary);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
+        .logo-text {
+            display: none;
         }
 
-        .logo-text {
-            font-family: 'DM Serif Display', serif;
-            font-size: 1.5rem;
-            color: var(--text);
-            letter-spacing: -0.5px;
+        /* Dark mode: lighten the Calori text in logo */
+        [data-theme='dark'] .logo tspan:first-child {
+            fill: #E8E6E0 !important;
         }
 
         /* Macro rings */
@@ -1058,9 +1047,24 @@
     <!-- ── SIDEBAR ── -->
     <aside class="sidebar">
         <div class="logo">
-            <div class="logo-icon">🥗</div>
-            <span class="logo-text">Caloriq</span>
-        </div>
+            <svg width="150" height="56" viewBox="0 0 150 56" xmlns="http://www.w3.org/2000/svg">
+              <!-- Apple icon -->
+              <g transform="translate(28,28)">
+                <!-- Apple body -->
+                <path d="M0,-16 C-3,-18 -10,-18 -14,-12 C-18,-6 -18,4 -14,13 C-10,20 -4,24 0,24 C4,24 10,20 14,13 C18,4 18,-6 14,-12 C10,-18 3,-18 0,-16 Z" fill="none" stroke="#6AB84A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- Stem -->
+                <path d="M0,-16 C1,-21 4,-24 5,-25" fill="none" stroke="#6AB84A" stroke-width="2.2" stroke-linecap="round"/>
+                <!-- Leaf -->
+                <path d="M5,-25 C10,-30 19,-27 16,-20 C13,-14 5,-17 5,-25 Z" fill="#6AB84A"/>
+                <!-- Indent top -->
+                <path d="M-3,-18 C-1,-20 1,-20 3,-18" fill="none" stroke="#6AB84A" stroke-width="1.8" stroke-linecap="round"/>
+              </g>
+              <!-- Calori in dark, q in green -->
+              <text x="56" y="36" font-family="'DM Sans', 'Segoe UI', sans-serif" font-size="26" font-weight="400" letter-spacing="-0.5">
+                <tspan fill="#333333">Calori</tspan><tspan fill="#6AB84A">q</tspan>
+              </text>
+            </svg>
+            </div>
 
         <!-- Calorie Arc -->
         <div class="calorie-gauge">
@@ -1154,7 +1158,6 @@
         </div>
         <div class="topbar-right">
             <div class="date-chip">📅 <span id="date-display"></span></div>
-            <button class="icon-btn" onclick="exportPDF()" title="Export to PDF">📄</button>
             <button class="icon-btn" onclick="exportCSV()" title="Export to CSV">📥</button>
         </div>
     </header>
@@ -1207,7 +1210,6 @@
             <div class="log-header">
                 <h2>Today's Food Log</h2>
                 <div class="log-actions">
-                    <button class="btn-ghost export" onclick="exportPDF()" style="margin-right:4px;">📄 Export PDF</button>
                     <button class="btn-ghost export" onclick="exportCSV()">📥 Export CSV</button>
                     <button class="btn-ghost" onclick="clearAll()">🗑 Clear All</button>
                 </div>
@@ -1289,9 +1291,6 @@
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
 <script>
 // ─── DATA ───
@@ -1446,6 +1445,7 @@ function saveProfile() {
 
     document.getElementById('profile-modal').classList.remove('show');
     renderAll();
+    renderWaterGlasses();
     showToast(`✅ Goal set to ${DAILY_GOAL} kcal/day`);
 }
 
@@ -1752,6 +1752,21 @@ function buildWeeklyChart() {
 }
 
 // ─── WATER ───
+function getWaterGoal() {
+    const p = JSON.parse(localStorage.getItem('calProfile') || '{}');
+    const age = p.age || 30;
+    // Evidence-based daily water goals (glasses of 250ml):
+    // 1–3 yrs: 4,  4–8 yrs: 5,  9–13 yrs: 7,  14–18 yrs: 8
+    // 19–54 yrs: 8,  55–64 yrs: 7,  65+: 6
+    if (age <= 3)  return 4;
+    if (age <= 8)  return 5;
+    if (age <= 13) return 7;
+    if (age <= 18) return 8;
+    if (age <= 54) return 8;
+    if (age <= 64) return 7;
+    return 6;
+}
+
 function loadWater() {
     const saved = localStorage.getItem('cqWater-' + todayKey());
     water = saved ? +saved : 0;
@@ -1759,20 +1774,22 @@ function loadWater() {
 }
 
 function renderWaterGlasses() {
+    const goal = getWaterGoal();
     const container = document.getElementById('water-glasses');
     let html = '';
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < goal; i++) {
         html += `<button class="glass-btn${i < water ? ' filled' : ''}" onclick="toggleGlass(${i})" title="Glass ${i+1}"></button>`;
     }
     container.innerHTML = html;
-    document.getElementById('water-count').textContent = `${water} / 8 glasses`;
+    document.getElementById('water-count').textContent = `${water} / ${goal} glasses`;
 }
 
 function toggleGlass(idx) {
+    const goal = getWaterGoal();
     water = (idx < water) ? idx : idx + 1;
     localStorage.setItem('cqWater-' + todayKey(), water);
     renderWaterGlasses();
-    if (water === 8) showToast('💧 Great job! You hit your water goal!');
+    if (water === goal) showToast('💧 Great job! You hit your water goal!');
 }
 
 // ─── STREAK ───
@@ -1799,85 +1816,6 @@ function todayKey() {
 function yesterdayKey() {
     const d = new Date(); d.setDate(d.getDate() - 1);
     return d.toISOString().slice(0, 10);
-}
-
-// ─── EXPORT PDF ───
-function exportPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    if (log.length === 0) { showToast('⚠️ Nothing to export'); return; }
-
-    const today = new Date().toLocaleDateString('en-US', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-    });
-
-    // Title
-    doc.setFontSize(22);
-    doc.setTextColor(212, 97, 26); // var(--primary)
-    doc.text('Caloriq Food Log', 14, 20);
-
-    doc.setFontSize(11);
-    doc.setTextColor(100);
-    doc.text(`Date: ${today}`, 14, 28);
-
-    // Summary
-    const total = log.reduce((s, x) => s + x.cal, 0);
-    const protein = log.reduce((s, x) => s + x.protein, 0);
-    const carbs = log.reduce((s, x) => s + x.carbs, 0);
-    const fat = log.reduce((s, x) => s + x.fat, 0);
-
-    doc.setFontSize(14);
-    doc.setTextColor(0);
-    doc.text('Daily Summary', 14, 42);
-
-    doc.setFontSize(10);
-    doc.text(`Total Consumed: ${total} kcal`, 14, 48);
-    doc.text(`Daily Goal: ${DAILY_GOAL} kcal`, 14, 53);
-    doc.text(`Macros: P: ${protein.toFixed(1)}g | C: ${carbs.toFixed(1)}g | F: ${fat.toFixed(1)}g`, 14, 58);
-
-    // Table
-    const tableRows = [];
-    const meals = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
-
-    meals.forEach(meal => {
-        const items = log.filter(x => x.meal === meal);
-        if (items.length > 0) {
-            const mealCal = items.reduce((s, x) => s + x.cal, 0);
-            // Section Header
-            tableRows.push([{
-                content: `${meal.toUpperCase()} - ${mealCal} kcal`,
-                colSpan: 4,
-                styles: { fillColor: [244, 243, 239], fontStyle: 'bold', textColor: [26, 25, 23] }
-            }]);
-
-            items.forEach(item => {
-                tableRows.push([
-                    item.name,
-                    `${item.amount} ${item.unit}`,
-                    `${item.cal} kcal`,
-                    item.time
-                ]);
-            });
-        }
-    });
-
-    doc.autoTable({
-        startY: 65,
-        head: [['Food', 'Amount', 'Calories', 'Time']],
-        body: tableRows,
-        theme: 'striped',
-        headStyles: { fillColor: [212, 97, 26], textColor: [255, 255, 255] },
-        styles: { fontSize: 9, cellPadding: 3 },
-        columnStyles: {
-            2: { halign: 'right' },
-            3: { halign: 'right' }
-        },
-        margin: { top: 20 }
-    });
-
-    doc.save(`caloriq-log-${todayKey()}.pdf`);
-    showToast('📥 Exported to PDF!');
 }
 
 // ─── EXPORT CSV ───
