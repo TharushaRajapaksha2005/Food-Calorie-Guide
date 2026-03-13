@@ -1154,6 +1154,7 @@
         </div>
         <div class="topbar-right">
             <div class="date-chip">📅 <span id="date-display"></span></div>
+            <button class="icon-btn" onclick="exportPDF()" title="Export to PDF">📄</button>
             <button class="icon-btn" onclick="exportCSV()" title="Export to CSV">📥</button>
         </div>
     </header>
@@ -1206,6 +1207,7 @@
             <div class="log-header">
                 <h2>Today's Food Log</h2>
                 <div class="log-actions">
+                    <button class="btn-ghost export" onclick="exportPDF()" style="margin-right:4px;">📄 Export PDF</button>
                     <button class="btn-ghost export" onclick="exportCSV()">📥 Export CSV</button>
                     <button class="btn-ghost" onclick="clearAll()">🗑 Clear All</button>
                 </div>
@@ -1287,6 +1289,9 @@
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
 <script>
 // ─── DATA ───
@@ -1794,6 +1799,85 @@ function todayKey() {
 function yesterdayKey() {
     const d = new Date(); d.setDate(d.getDate() - 1);
     return d.toISOString().slice(0, 10);
+}
+
+// ─── EXPORT PDF ───
+function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    if (log.length === 0) { showToast('⚠️ Nothing to export'); return; }
+
+    const today = new Date().toLocaleDateString('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    // Title
+    doc.setFontSize(22);
+    doc.setTextColor(212, 97, 26); // var(--primary)
+    doc.text('Caloriq Food Log', 14, 20);
+
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Date: ${today}`, 14, 28);
+
+    // Summary
+    const total = log.reduce((s, x) => s + x.cal, 0);
+    const protein = log.reduce((s, x) => s + x.protein, 0);
+    const carbs = log.reduce((s, x) => s + x.carbs, 0);
+    const fat = log.reduce((s, x) => s + x.fat, 0);
+
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.text('Daily Summary', 14, 42);
+
+    doc.setFontSize(10);
+    doc.text(`Total Consumed: ${total} kcal`, 14, 48);
+    doc.text(`Daily Goal: ${DAILY_GOAL} kcal`, 14, 53);
+    doc.text(`Macros: P: ${protein.toFixed(1)}g | C: ${carbs.toFixed(1)}g | F: ${fat.toFixed(1)}g`, 14, 58);
+
+    // Table
+    const tableRows = [];
+    const meals = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+
+    meals.forEach(meal => {
+        const items = log.filter(x => x.meal === meal);
+        if (items.length > 0) {
+            const mealCal = items.reduce((s, x) => s + x.cal, 0);
+            // Section Header
+            tableRows.push([{
+                content: `${meal.toUpperCase()} - ${mealCal} kcal`,
+                colSpan: 4,
+                styles: { fillColor: [244, 243, 239], fontStyle: 'bold', textColor: [26, 25, 23] }
+            }]);
+
+            items.forEach(item => {
+                tableRows.push([
+                    item.name,
+                    `${item.amount} ${item.unit}`,
+                    `${item.cal} kcal`,
+                    item.time
+                ]);
+            });
+        }
+    });
+
+    doc.autoTable({
+        startY: 65,
+        head: [['Food', 'Amount', 'Calories', 'Time']],
+        body: tableRows,
+        theme: 'striped',
+        headStyles: { fillColor: [212, 97, 26], textColor: [255, 255, 255] },
+        styles: { fontSize: 9, cellPadding: 3 },
+        columnStyles: {
+            2: { halign: 'right' },
+            3: { halign: 'right' }
+        },
+        margin: { top: 20 }
+    });
+
+    doc.save(`caloriq-log-${todayKey()}.pdf`);
+    showToast('📥 Exported to PDF!');
 }
 
 // ─── EXPORT CSV ───
