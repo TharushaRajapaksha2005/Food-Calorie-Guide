@@ -174,12 +174,23 @@
             text-align: center;
         }
 
+        @keyframes popOut {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); color: var(--primary-light); }
+            100% { transform: scale(1); }
+        }
+
         .gauge-number {
             font-family: 'DM Serif Display', serif;
             font-size: 2.8rem;
             color: var(--primary);
             line-height: 1;
             letter-spacing: -2px;
+            display: inline-block;
+        }
+
+        .gauge-number.pop {
+            animation: popOut 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .gauge-sub {
@@ -217,9 +228,18 @@
             gap: 14px;
         }
 
+        @keyframes firePulse {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
         .streak-fire {
             font-size: 2rem;
             line-height: 1;
+            display: inline-block;
+            animation: firePulse 2s infinite ease-in-out;
+            transform-origin: bottom center;
         }
 
         .streak-info { flex: 1; }
@@ -342,6 +362,11 @@
             gap: 6px;
         }
 
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         /* ── MAIN CONTENT ── */
         .main-content {
             padding: 28px 32px;
@@ -350,6 +375,16 @@
             flex-direction: column;
             gap: 24px;
         }
+
+        .main-content > * {
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
+        
+        .main-content > *:nth-child(1) { animation-delay: 0.05s; }
+        .main-content > *:nth-child(2) { animation-delay: 0.1s; }
+        .main-content > *:nth-child(3) { animation-delay: 0.15s; }
+        .main-content > *:nth-child(4) { animation-delay: 0.2s; }
+        .main-content > *:nth-child(5) { animation-delay: 0.25s; }
 
         .section-title {
             font-family: 'DM Serif Display', serif;
@@ -429,7 +464,8 @@
             white-space: nowrap;
         }
 
-        .add-btn-primary:hover { background: var(--primary-light); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212,97,26,0.3); }
+        .add-btn-primary:hover { background: var(--primary-light); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(212,97,26,0.4); }
+        .add-btn-primary:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(212,97,26,0.2); transition: all 0.1s; }
 
         .unit-hint {
             font-size: 0.75rem;
@@ -665,13 +701,18 @@
             background: var(--surface);
             padding: 14px 16px;
             cursor: pointer;
-            transition: background 0.15s;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             display: flex;
             flex-direction: column;
             gap: 3px;
         }
 
-        .food-grid-item:hover { background: var(--primary-bg); }
+        .food-grid-item:hover { 
+            background: var(--primary-bg); 
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: var(--shadow-sm);
+            z-index: 1;
+        }
 
         .food-grid-item .fgi-name {
             font-weight: 600;
@@ -813,8 +854,15 @@
             transition: all 0.2s;
         }
 
+        @keyframes fillGlass {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
         .glass-btn.filled {
             background: var(--blue);
+            animation: fillGlass 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .glass-btn .fill-anim {
@@ -1580,7 +1628,15 @@ function renderAll() {
     const fat      = log.reduce((s, x) => s + x.fat, 0);
 
     // Gauge
-    document.getElementById('gauge-number').textContent = total;
+    const gaugeEl = document.getElementById('gauge-number');
+    if (gaugeEl.textContent !== String(total)) {
+        gaugeEl.textContent = total;
+        gaugeEl.classList.remove('pop');
+        void gaugeEl.offsetWidth; // trigger reflow
+        gaugeEl.classList.add('pop');
+    } else {
+        gaugeEl.textContent = total;
+    }
     const rem = DAILY_GOAL - total;
     document.getElementById('gauge-remaining-num').textContent = Math.max(0, rem);
     const arcPct = Math.min(total / DAILY_GOAL, 1);
