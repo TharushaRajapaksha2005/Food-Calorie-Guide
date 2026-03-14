@@ -376,6 +376,22 @@
             gap: 24px;
         }
 
+        
+        /* ── WORKOUT & TABS ── */
+        .main-content-tab {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .main-content-tab > * {
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
+        .main-content-tab > *:nth-child(1) { animation-delay: 0.05s; }
+        .main-content-tab > *:nth-child(2) { animation-delay: 0.1s; }
+        .main-content-tab > *:nth-child(3) { animation-delay: 0.15s; }
+        .main-content-tab > *:nth-child(4) { animation-delay: 0.2s; }
+        .main-content-tab > *:nth-child(5) { animation-delay: 0.25s; }
+
         .main-content > * {
             animation: fadeInUp 0.6s ease-out backwards;
         }
@@ -1188,7 +1204,14 @@
             <div class="water-glasses" id="water-glasses"></div>
         </div>
 
+        
         <div class="sidebar-nav">
+            <button class="nav-btn active" id="btn-dashboard" onclick="switchTab('dashboard')">
+                <span class="nav-icon">📊</span> Calories
+            </button>
+            <button class="nav-btn" id="btn-workout" onclick="switchTab('workout')">
+                <span class="nav-icon">🏋️</span> Workout
+            </button>
             <button class="nav-btn" id="btn-profile" onclick="openProfileModal()">
                 <span class="nav-icon">⚙️</span> Edit Profile
             </button>
@@ -1196,6 +1219,7 @@
                 <span class="nav-icon" id="theme-icon">🌙</span> <span id="theme-label">Dark Mode</span>
             </button>
         </div>
+
     </aside>
 
     <!-- ── TOP BAR ── -->
@@ -1212,6 +1236,7 @@
 
     <!-- ── MAIN ── -->
     <main class="main-content">
+        <div id="dashboard-section" class="main-content-tab">
 
         <!-- Goal exceeded warning -->
         <div class="goal-exceeded" id="goal-exceeded">
@@ -1277,6 +1302,142 @@
             <div class="category-tabs" id="category-tabs"></div>
             <div class="food-grid" id="food-grid"></div>
         </div>
+    
+        </div> <!-- End dashboard-section -->
+
+        <div id="workout-section" class="main-content-tab" style="display: none;">
+            <div class="section-title">Workout Progress</div>
+
+            <!-- Weight Progress -->
+            <div class="quick-add-card">
+                <h2>Weight Progress</h2>
+                <div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <button class="cat-tab active" onclick="setWeightFilter('week', this)">Week</button>
+                        <button class="cat-tab" onclick="setWeightFilter('month', this)">Month</button>
+                        <button class="cat-tab" onclick="setWeightFilter('year', this)">Year</button>
+                    </div>
+                    <div class="bar-chart" id="weight-chart" style="height: 120px; align-items: flex-end;"></div>
+                </div>
+            </div>
+
+            <!-- Workout Analytics -->
+            <div class="quick-add-card">
+                <h2>Workout Analytics</h2>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; align-items: flex-end;">
+                    <div class="form-field grow">
+                        <label>Period</label>
+                        <select id="wa-period" onchange="renderWorkoutAnalytics()">
+                            <option value="week" selected>Past 7 Days</option>
+                            <option value="month">Past 30 Days</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+                    <div class="form-field" id="wa-custom-start-wrap" style="display: none;">
+                        <label>Start Date</label>
+                        <input type="date" id="wa-custom-start" onchange="renderWorkoutAnalytics()">
+                    </div>
+                    <div class="form-field" id="wa-custom-end-wrap" style="display: none;">
+                        <label>End Date</label>
+                        <input type="date" id="wa-custom-end" onchange="renderWorkoutAnalytics()">
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 12px; justify-content: space-around; background: var(--surface-2); padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); align-items: center; margin-bottom: 16px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Workouts</div>
+                        <div style="font-family: 'DM Serif Display', serif; font-size: 1.8rem; color: var(--text);" id="wa-total-count">0</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Burned</div>
+                        <div style="font-family: 'DM Serif Display', serif; font-size: 1.8rem; color: var(--danger);" id="wa-total-cal">0 <span style="font-size: 0.8rem; font-family: 'DM Sans', sans-serif;">kcal</span></div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Distance</div>
+                        <div style="font-family: 'DM Serif Display', serif; font-size: 1.8rem; color: var(--blue);" id="wa-total-dist">0 <span style="font-size: 0.8rem; font-family: 'DM Sans', sans-serif;">km</span></div>
+                    </div>
+                </div>
+                <!-- Analytic Charts -->
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div>
+                        <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Workouts</div>
+                        <div id="wa-chart-count" style="height: 80px; width: 100%;"></div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Calories Burned</div>
+                        <div id="wa-chart-cal" style="height: 80px; width: 100%;"></div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Distance (km)</div>
+                        <div id="wa-chart-dist" style="height: 80px; width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Log Strength -->
+            <div class="quick-add-card">
+                <h2>Log Strength Training</h2>
+                <div class="add-form-row">
+                    <div class="form-field grow">
+                        <label>Exercise</label>
+                        <input type="text" id="strength-name" placeholder="e.g. Bench Press">
+                    </div>
+                    <div class="form-field" style="width: 80px;">
+                        <label>Weight</label>
+                        <input type="number" id="strength-weight" placeholder="kg">
+                    </div>
+                    <div class="form-field" style="width: 80px;">
+                        <label>Sets</label>
+                        <input type="number" id="strength-sets" placeholder="0">
+                    </div>
+                    <div class="form-field" style="width: 80px;">
+                        <label>Reps</label>
+                        <input type="number" id="strength-reps" placeholder="0">
+                    </div>
+                    <button class="add-btn-primary" onclick="logStrength()">+ Log</button>
+                </div>
+            </div>
+
+            <!-- Log Cardio -->
+            <div class="quick-add-card">
+                <h2>Log Cardio</h2>
+                <div class="add-form-row">
+                    <div class="form-field grow">
+                        <label>Type</label>
+                        <select id="cardio-type">
+                            <option value="Walking">Walking</option>
+                            <option value="Running">Running</option>
+                            <option value="Sprinting">Sprinting</option>
+                        </select>
+                    </div>
+                    <div class="form-field" style="width: 120px;">
+                        <label>Distance (km)</label>
+                        <input type="number" id="cardio-dist" step="0.1" placeholder="0">
+                    </div>
+                    <div class="form-field" style="width: 120px;">
+                        <label>Duration (min)</label>
+                        <input type="number" id="cardio-time" placeholder="0">
+                    </div>
+                    <button class="add-btn-primary" onclick="logCardio()">+ Log</button>
+                </div>
+            </div>
+
+            <!-- Workout Log -->
+            <div class="log-card">
+                <div class="log-header" style="flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <h2>Workout History</h2>
+                        <input type="date" id="history-date" onchange="loadWorkoutHistory()" style="padding: 4px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font-family: 'DM Sans', sans-serif;">
+                    </div>
+                    <div class="log-actions">
+                        <div style="font-weight: 600; color: var(--danger);">
+                            🔥 <span id="burned-calories">0</span> kcal burned
+                        </div>
+                    </div>
+                </div>
+                <div id="workout-log-list"></div>
+            </div>
+
     </main>
 </div>
 
@@ -1385,6 +1546,12 @@ const FOODS = [
 let DAILY_GOAL = 2000;
 let log = []; // { id, name, cal, amount, unit, meal, protein, carbs, fat, time }
 let water = 0;
+
+let workoutLog = []; 
+let weightHistory = []; 
+let currentWeight = 70;
+let currentHeight = 170;
+
 let streak = 0;
 let weeklyData = [0,0,0,0,0,0,0]; // last 7 days
 
@@ -1490,6 +1657,16 @@ function saveProfile() {
 
     localStorage.setItem('calGoal', DAILY_GOAL);
     localStorage.setItem('calProfile', JSON.stringify({ gender, age, weight, height, activity, goalOffset }));
+
+    currentWeight = weight;
+    currentHeight = height;
+    const d = new Date().toISOString().slice(0,10);
+    const existing = weightHistory.find(x => x.date === d);
+    if (existing) existing.weight = weight;
+    else weightHistory.push({ date: d, weight: weight });
+    localStorage.setItem('czWeightHist', JSON.stringify(weightHistory));
+    
+    if (typeof renderWeightChart === 'function') renderWeightChart();
 
     document.getElementById('profile-modal').classList.remove('show');
     renderAll();
@@ -1622,6 +1799,10 @@ function clearAll() {
 
 // ─── RENDER ───
 function renderAll() {
+    renderWorkout();
+    renderWeightChart();
+    renderWorkoutAnalytics();
+
     const total = log.reduce((s, x) => s + x.cal, 0);
     const protein = log.reduce((s, x) => s + x.protein, 0);
     const carbs   = log.reduce((s, x) => s + x.carbs, 0);
@@ -1905,6 +2086,32 @@ function saveLog() {
 }
 
 function loadAll() {
+    const savedWorkout = localStorage.getItem('czWorkout-' + todayKey());
+    if (savedWorkout) workoutLog = JSON.parse(savedWorkout);
+
+    const savedWeightHist = localStorage.getItem('czWeightHist');
+    let parsedHist = savedWeightHist ? JSON.parse(savedWeightHist) : [];
+
+    const p = JSON.parse(localStorage.getItem('calProfile') || '{}');
+    if (p.weight) currentWeight = p.weight;
+    if (p.height) currentHeight = p.height;
+
+    // Generate mock history if empty or only 1 entry to demonstrate the line graph
+    if (parsedHist.length <= 1 && currentWeight) {
+        parsedHist = [];
+        const today = new Date();
+        let w = currentWeight + 3.5; // start a bit higher
+        for (let i = 30; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(today.getDate() - i);
+            w = w - (Math.random() * 0.3 - 0.05); // slight downward trend
+            if (i === 0) w = currentWeight; // Today is exactly current
+            parsedHist.push({ date: d.toISOString().slice(0, 10), weight: parseFloat(w.toFixed(1)) });
+        }
+        localStorage.setItem('czWeightHist', JSON.stringify(parsedHist));
+    }
+    weightHistory = parsedHist;
+
     const goal = localStorage.getItem('calGoal');
     if (goal) DAILY_GOAL = +goal;
 
@@ -1914,6 +2121,351 @@ function loadAll() {
     const savedWeekly = localStorage.getItem('czWeekly');
     if (savedWeekly) weeklyData = JSON.parse(savedWeekly);
 }
+
+// ─── WORKOUT LOGIC ───
+function switchTab(tab) {
+    document.getElementById('dashboard-section').style.display = tab === 'dashboard' ? 'flex' : 'none';
+    document.getElementById('workout-section').style.display = tab === 'workout' ? 'flex' : 'none';
+
+    document.getElementById('btn-dashboard').classList.toggle('active', tab === 'dashboard');
+    document.getElementById('btn-workout').classList.toggle('active', tab === 'workout');
+
+    if (tab === 'workout') {
+        setTimeout(renderWeightChart, 10);
+    }
+}
+function renderWorkoutAnalytics() {
+    const period = document.getElementById('wa-period').value;
+    const startWrap = document.getElementById('wa-custom-start-wrap');
+    const endWrap = document.getElementById('wa-custom-end-wrap');
+
+    startWrap.style.display = period === 'custom' ? 'flex' : 'none';
+    endWrap.style.display = period === 'custom' ? 'flex' : 'none';
+
+    let dateKeys = [];
+    if (period === 'week') {
+        for(let i=6; i>=0; i--) {
+            const d = new Date();
+            d.setUTCDate(d.getUTCDate() - i);
+            dateKeys.push(d.toISOString().slice(0, 10));
+        }
+    } else if (period === 'month') {
+        for(let i=29; i>=0; i--) {
+            const d = new Date();
+            d.setUTCDate(d.getUTCDate() - i);
+            dateKeys.push(d.toISOString().slice(0, 10));
+        }
+    } else {
+        const customS = document.getElementById('wa-custom-start').value;
+        const customE = document.getElementById('wa-custom-end').value;
+        if (!customS || !customE) return; // Wait for both
+        let current = new Date(customS + 'T00:00:00Z');
+        let end = new Date(customE + 'T00:00:00Z');
+        let failsafe = 0;
+        while(current <= end && failsafe < 365) {
+            dateKeys.push(current.toISOString().slice(0, 10));
+            current.setUTCDate(current.getUTCDate() + 1);
+            failsafe++;
+        }
+    }
+
+    let totalWorkouts = 0;
+    let totalCals = 0;
+    let totalDist = 0;
+
+    let dailyData = [];
+    dateKeys.forEach(dateStr => {
+        const savedData = localStorage.getItem('czWorkout-' + dateStr);
+        let dayCount = 0, dayCal = 0, dayDist = 0;
+        if (savedData) {
+            const logs = JSON.parse(savedData);
+            dayCount = logs.length;
+            logs.forEach(w => {
+                dayCal += (w.calBurned || 0);
+                if (w.type === 'cardio') dayDist += (w.dist || 0);
+            });
+            totalWorkouts += dayCount;
+            totalCals += dayCal;
+            totalDist += dayDist;
+        }
+        dailyData.push({ date: dateStr, count: dayCount, cal: dayCal, dist: dayDist });
+    });
+
+    document.getElementById('wa-total-count').textContent = totalWorkouts;
+    document.getElementById('wa-total-cal').innerHTML = totalCals + ' <span style="font-size: 0.8rem; font-family: \'DM Sans\', sans-serif;">kcal</span>';
+    document.getElementById('wa-total-dist').innerHTML = parseFloat(totalDist).toFixed(1) + ' <span style="font-size: 0.8rem; font-family: \'DM Sans\', sans-serif;">km</span>';
+    
+    // Draw Charts
+    drawMiniChart('wa-chart-count', dailyData, 'count', 'var(--text)');
+    drawMiniChart('wa-chart-cal', dailyData, 'cal', 'var(--danger)');
+    drawMiniChart('wa-chart-dist', dailyData, 'dist', 'var(--blue)');
+}
+
+function drawMiniChart(containerId, data, key, color) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    if (data.length === 0) { container.innerHTML = ''; return; }
+    
+    // Downsample if too many points (>31)
+    let displayData = data;
+    if (data.length > 31) {
+        displayData = [];
+        const step = Math.ceil(data.length / 30);
+        for(let i=0; i<data.length; i+=step) {
+            const chunk = data.slice(i, i+step);
+            const sum = chunk.reduce((s, x) => s + x[key], 0);
+            displayData.push({ date: chunk[0].date, [key]: sum / chunk.length }); // average over chunk
+        }
+    }
+    
+    const max = Math.max(...displayData.map(d => d[key])) || 1; // avoid /0
+    const w = container.clientWidth || 300;
+    const h = 80;
+    
+    let html = `<svg width="100%" height="${h}" style="overflow:visible;">`;
+    const barW = Math.max((w / displayData.length) - 2, 2);
+    
+    displayData.forEach((d, i) => {
+        const pct = d[key] / max;
+        const barH = Math.max(pct * h, 2); // minimum 2px height for 0 values
+        const x = i * (w / displayData.length);
+        const y = h - barH;
+        const opacity = d[key] > 0 ? 1 : 0.2;
+        html += `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="${color}" opacity="${opacity}" rx="2">`;
+        html += `<title>${d.date}: ${d[key].toFixed(1)}</title>`;
+        html += `</rect>`;
+    });
+    html += `</svg>`;
+    container.innerHTML = html;
+}
+function logStrength() {
+    const name = document.getElementById('strength-name').value || 'Strength Training';
+    const weight = parseFloat(document.getElementById('strength-weight').value) || 0;
+    const sets = parseInt(document.getElementById('strength-sets').value) || 0;
+    const reps = parseInt(document.getElementById('strength-reps').value) || 0;
+    
+    if (!sets || !reps) { showToast('⚠️ Enter sets and reps'); return; }
+    
+    const calBurned = Math.round(sets * reps * 0.5 + weight * 0.1);
+    
+    // Always log to today
+    let todaysLog = [];
+    const saved = localStorage.getItem('czWorkout-' + todayKey());
+    if (saved) todaysLog = JSON.parse(saved);
+    todaysLog.push({
+        id: Date.now(),
+        type: 'strength',
+        name, weight, sets, reps, calBurned,
+        timeOfDay: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })
+    });
+    localStorage.setItem('czWorkout-' + todayKey(), JSON.stringify(todaysLog));
+    
+    if (document.getElementById('history-date').value === todayKey()) {
+        workoutLog = todaysLog;
+        renderWorkout();
+    }
+    renderWorkoutAnalytics();
+    
+    document.getElementById('strength-name').value = '';
+    document.getElementById('strength-weight').value = '';
+    document.getElementById('strength-sets').value = '';
+    document.getElementById('strength-reps').value = '';
+    showToast(`✅ Logged ${name} (${calBurned} kcal burned)`);
+}
+
+function logCardio() {
+    const type = document.getElementById('cardio-type').value;
+    const dist = parseFloat(document.getElementById('cardio-dist').value) || 0;
+    const time = parseFloat(document.getElementById('cardio-time').value) || 0;
+    
+    if (!dist && !time) { showToast('⚠️ Enter distance or duration'); return; }
+    
+    let multiplier = 0.75;
+    if (type === 'Running') multiplier = 1.03;
+    if (type === 'Sprinting') multiplier = 1.2;
+    
+    let calBurned = 0;
+    if (dist) {
+        calBurned = Math.round(dist * currentWeight * multiplier);
+    } else {
+        let speed = type === 'Walking' ? 5 : (type === 'Running' ? 10 : 15);
+        let estDist = (time / 60) * speed;
+        calBurned = Math.round(estDist * currentWeight * multiplier);
+    }
+    
+    // Always log to today
+    let todaysLog = [];
+    const saved = localStorage.getItem('czWorkout-' + todayKey());
+    if (saved) todaysLog = JSON.parse(saved);
+    todaysLog.push({
+        id: Date.now(),
+        type: 'cardio',
+        name: type, dist, time, calBurned,
+        timeOfDay: new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })
+    });
+    localStorage.setItem('czWorkout-' + todayKey(), JSON.stringify(todaysLog));
+    
+    if (document.getElementById('history-date').value === todayKey()) {
+        workoutLog = todaysLog;
+        renderWorkout();
+    }
+    renderWorkoutAnalytics();
+    
+    document.getElementById('cardio-dist').value = '';
+    document.getElementById('cardio-time').value = '';
+    showToast(`✅ Logged ${type} (${calBurned} kcal burned)`);
+}
+
+function loadWorkoutHistory() {
+    const selectedDate = document.getElementById('history-date').value || todayKey();
+    const saved = localStorage.getItem('czWorkout-' + selectedDate);
+    workoutLog = saved ? JSON.parse(saved) : [];
+    renderWorkout();
+}
+
+function removeWorkout(id) {
+    workoutLog = workoutLog.filter(x => x.id !== id);
+    const selectedDate = document.getElementById('history-date').value || todayKey();
+    localStorage.setItem('czWorkout-' + selectedDate, JSON.stringify(workoutLog));
+    renderWorkout();
+    renderWorkoutAnalytics();
+}
+
+
+
+function renderWorkout() {
+    const list = document.getElementById('workout-log-list');
+    if (!workoutLog.length) {
+        list.innerHTML = `<div class="log-empty"><span class="log-empty-icon">💪</span><p>No workouts logged on this date.</p></div>`;
+        document.getElementById('burned-calories').textContent = '0';
+        return;
+    }
+    
+    let totalBurned = 0;
+    let html = `<div class="log-row header-row">
+        <div>Workout</div>
+        <div>Details</div>
+        <div>Burned</div>
+        <div></div>
+    </div>`;
+    
+    workoutLog.forEach(w => {
+        totalBurned += w.calBurned;
+        
+        let details = w.type === 'strength' 
+            ? `${w.weight ? w.weight+'kg • ' : ''}${w.sets} sets × ${w.reps} reps`
+            : `${w.dist ? w.dist+' km' : ''}${w.dist && w.time ? ' • ' : ''}${w.time ? w.time+' min' : ''}`;
+            
+        html += `<div class="log-row">
+            <div>
+                <div class="log-food-name">${w.name}</div>
+                <div class="log-food-amount">${w.timeOfDay || ''}</div>
+            </div>
+            <div class="log-food-amount">${details}</div>
+            <div><span class="log-cal-badge" style="background:var(--danger-bg); color:var(--danger);">${w.calBurned} kcal</span></div>
+            <div>
+                <button class="remove-log-btn" onclick="removeWorkout(${w.id})">✕</button>
+            </div>
+        </div>`;
+    });
+    
+    list.innerHTML = html;
+    document.getElementById('burned-calories').textContent = totalBurned;
+}
+
+let activeWeightFilter = 'week';
+function setWeightFilter(filter, el) {
+    activeWeightFilter = filter;
+    el.parentElement.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    renderWeightChart();
+}
+
+function renderWeightChart() {
+    const chart = document.getElementById('weight-chart');
+    chart.style.display = 'block'; // Reset flex styles
+    
+    if (!weightHistory.length) {
+        chart.innerHTML = `<div style="text-align:center; width:100%; font-size:0.8rem; color:var(--text-muted); margin-top:20px;">No weight history yet.</div>`;
+        return;
+    }
+    
+    let n = 7;
+    if (activeWeightFilter === 'month') n = 30;
+    if (activeWeightFilter === 'year') n = 365;
+    
+    const data = weightHistory.slice(-n);
+    if (data.length === 0) return;
+    
+    let displayData = data;
+    if (n === 365 && data.length > 12) {
+        displayData = data.filter((_, i) => i % Math.ceil(data.length / 12) === 0);
+    } else if (n === 30 && data.length > 15) {
+        displayData = data.filter((_, i) => i % 2 === 0);
+    }
+    
+    const max = Math.max(...displayData.map(d => d.weight)) + 5;
+    const min = Math.max(0, Math.min(...displayData.map(d => d.weight)) - 5);
+    
+    const svgWidth = chart.clientWidth || 400;
+    const svgHeight = 140;
+    const paddingX = 30;
+    const paddingY = 25;
+    const graphWidth = svgWidth - paddingX * 2;
+    const graphHeight = svgHeight - paddingY * 2;
+    
+    let svgContent = `<svg width="100%" height="${svgHeight}" style="overflow:visible;">`;
+    
+    if (displayData.length === 1) {
+        const pt = displayData[0];
+        const dayLabel = new Date(pt.date).toLocaleDateString('en-US', {month:'short', day:'numeric'});
+        svgContent += `
+            <circle cx="${svgWidth/2}" cy="${svgHeight/2}" r="5" fill="var(--primary)" />
+            <text x="${svgWidth/2}" y="${svgHeight/2 - 15}" fill="var(--text)" font-size="12" text-anchor="middle" font-weight="bold">${pt.weight}kg</text>
+            <text x="${svgWidth/2}" y="${svgHeight/2 + 20}" fill="var(--text-muted)" font-size="10" text-anchor="middle">${dayLabel}</text>
+        `;
+    } else {
+        const points = displayData.map((d, i) => {
+            const x = paddingX + (i / (displayData.length - 1)) * graphWidth;
+            const pct = Math.max(0, Math.min(((d.weight - min) / (max - min)), 1));
+            const y = svgHeight - paddingY - (pct * graphHeight);
+            return { x, y, weight: d.weight, date: d.date };
+        });
+        
+        const linePath = points.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(' ');
+        
+        const fillPath = `${linePath} L ${points[points.length-1].x} ${svgHeight - paddingY + 5} L ${points[0].x} ${svgHeight - paddingY + 5} Z`;
+        svgContent += `<path d="${fillPath}" fill="var(--primary)" opacity="0.1" />`;
+        
+        svgContent += `<path d="${linePath}" fill="none" stroke="var(--primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />`;
+        
+        points.forEach((p, i) => {
+            const dayLabel = n === 7 ? new Date(p.date).toLocaleDateString('en-US', {weekday:'short'}) 
+                           : new Date(p.date).toLocaleDateString('en-US', {month:'short', day:'numeric'});
+                           
+            const showLabel = displayData.length <= 7 || i === 0 || i === displayData.length - 1 || i === Math.floor(displayData.length / 2);
+            
+            svgContent += `<circle cx="${p.x}" cy="${p.y}" r="4" fill="var(--surface)" stroke="var(--primary)" stroke-width="2" />`;
+            
+            if (showLabel) {
+                svgContent += `<text x="${p.x}" y="${p.y - 12}" fill="var(--text)" font-size="11" text-anchor="middle" font-weight="600">${p.weight}</text>`;
+                svgContent += `<text x="${p.x}" y="${svgHeight - 2}" fill="var(--text-muted)" font-size="10" text-anchor="middle">${dayLabel}</text>`;
+            }
+        });
+    }
+    
+    svgContent += `</svg>`;
+    chart.innerHTML = svgContent;
+}
+
+window.addEventListener('resize', () => {
+    if (document.getElementById('workout-section').style.display === 'flex') {
+        renderWeightChart();
+        renderWorkoutAnalytics();
+    }
+});
+
+// Ensure init renders workout stuff
 
 // ─── TOAST ───
 function showToast(msg) {
