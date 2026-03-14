@@ -1556,7 +1556,56 @@ let streak = 0;
 let weeklyData = [0,0,0,0,0,0,0]; // last 7 days
 
 // ─── INIT ───
-function init() {
+async function seedTestData() {
+    if (localStorage.getItem('testDataSeeded_v3')) return;
+    
+    const mapDate = (key) => {
+        const d = new Date();
+        const offset = parseInt(key) || 0;
+        d.setDate(d.getDate() - offset);
+        return { str: d.toISOString().slice(0, 10), idx: d.getDay() };
+    };
+
+    let weekly = [0,0,0,0,0,0,0];
+
+    try {
+        const fwRes = await fetch('test_food_water.json');
+        if (fwRes.ok) {
+            const fwData = await fwRes.json();
+            for (let k in fwData) {
+                const mapped = mapDate(k);
+                if (fwData[k].food) {
+                    localStorage.setItem('czLog-' + mapped.str, JSON.stringify(fwData[k].food));
+                    const dayCals = fwData[k].food.reduce((sum, item) => sum + item.cal, 0);
+                    // Only sum for the last 7 days
+                    if (parseInt(k) < 7) {
+                        weekly[mapped.idx] += dayCals;
+                    }
+                }
+                if (fwData[k].water !== undefined) {
+                    localStorage.setItem('czWater-' + mapped.str, fwData[k].water);
+                }
+            }
+            localStorage.setItem('czWeekly', JSON.stringify(weekly));
+        }
+        
+        const wRes = await fetch('test_workouts.json');
+        if (wRes.ok) {
+            const wData = await wRes.json();
+            for (let k in wData) {
+                const mapped = mapDate(k);
+                localStorage.setItem('czWorkout-' + mapped.str, JSON.stringify(wData[k]));
+            }
+        }
+        localStorage.setItem('testDataSeeded_v3', 'true');
+    } catch(e) {
+        console.error('Seeding failed. Note: fetch() requires a web server (e.g. python -m http.server)', e);
+        setTimeout(() => showToast('⚠️ Could not load JSON data (needs local server)'), 1000);
+    }
+}
+
+async function init() {
+    await seedTestData();
     loadAll();
     if (!localStorage.getItem('calGoal')) {
         document.getElementById('profile-modal').classList.add('show');
